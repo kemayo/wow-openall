@@ -1,0 +1,9 @@
+## Interface: 20100
+
+## Title: Open All
+## Notes: Open all your mail
+## Author: Kemayo
+## Version: 1
+## X-Category: Mail
+
+OpenAll.lua
