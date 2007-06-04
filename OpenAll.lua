@@ -1,4 +1,4 @@
-local deletedelay = 0.5
+local deletedelay, t = 0.5, 0
 local button, waitForMail, doNothing, openAll, openMail, lastopened
 function doNothing() end
 function openAll()
@@ -11,25 +11,24 @@ function openMail(index)
 	local _, _, _, _, money, COD, _, hasItem = GetInboxHeaderInfo(index)
 	if money > 0 then TakeInboxMoney(index) end
 	elseif hasItem and COD <= 0 then TakeInboxItem(index) end
-	if GetInboxNumItems() > 1 then
+	local items = GetInboxNumItems()
+	if index < items and items > 1 then
 		lastopened = index
+		t = 0
 		button:SetScript("OnUpdate", waitForMail)
 	else
 		button:SetScript("OnClick", openAll)
 	end
 end
-do
-	local t = 0
-	function waitForMail()
-		t = t + arg1
-		if t > deletedelay then
-			button:SetScript("OnUpdate", nil)
-			local _, _, _, _, money, COD, _, hasItem, _, wasReturned, _, canReply = GetInboxHeaderInfo(lastopened)
-			if money > 0 or hasItem then --deleted or bumped
-				openMail(lastopened)
-			else
-				openMail(lastopened + 1)
-			end
+function waitForMail()
+	t = t + arg1
+	if t > deletedelay then
+		button:SetScript("OnUpdate", nil)
+		local _, _, _, _, money, _, _, hasItem = GetInboxHeaderInfo(lastopened)
+		if money > 0 or hasItem then --deleted or bumped
+			openMail(lastopened)
+		else
+			openMail(lastopened + 1)
 		end
 	end
 end
