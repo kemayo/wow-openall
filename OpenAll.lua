@@ -1,9 +1,14 @@
 local deletedelay, t = 0.5, 0
 local button, waitForMail, doNothing, openAll, openMail, lastopened
+local _G = getfenv(0)
+local baseInboxFrame_OnClick
 function doNothing() end
 function openAll()
 	button:SetScript("OnClick", donothing)
 	if GetInboxNumItems() == 0 then return end
+	baseInboxFrame_OnClick = InboxFrame_OnClick
+	InboxFrame_OnClick = doNothing
+	for i = 1, 7 do _G["MailItem" .. i .. "ButtonIcon"]:SetDesaturated(1) end
 	openMail(1)
 end
 function openMail(index)
@@ -18,6 +23,8 @@ function openMail(index)
 		button:SetScript("OnUpdate", waitForMail)
 	else
 		button:SetScript("OnClick", openAll)
+		InboxFrame_OnClick = baseInboxFrame_OnClick
+		for i = 1, 7 do _G["MailItem" .. i .. "ButtonIcon"]:SetDesaturated(nil) end
 	end
 end
 function waitForMail()
@@ -32,7 +39,6 @@ function waitForMail()
 		end
 	end
 end
-
 button = CreateFrame("Button", "OpenAllButton", InboxFrame, "UIPanelButtonTemplate")
 button:SetWidth(120)
 button:SetHeight(25)
