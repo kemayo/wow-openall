@@ -9,7 +9,7 @@ end
 function openMail(index)
 	if not InboxFrame:IsVisible() then return end
 	local _, _, _, _, money, COD, _, hasItem = GetInboxHeaderInfo(index)
-	if money > 0 then TakeInboxMoney(index) end
+	if money > 0 then TakeInboxMoney(index)
 	elseif hasItem and COD <= 0 then TakeInboxItem(index) end
 	local items = GetInboxNumItems()
 	if index < items and items > 1 then
