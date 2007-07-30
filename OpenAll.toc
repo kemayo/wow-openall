@@ -5,5 +5,8 @@
 ## Author: Kemayo
 ## Version: 1
 ## X-Category: Mail
+## LoadManagers: SupplyAndDemand, ForkliftGnome
+## X-S&D-AtMail: true
+## X-LoadOn-Mailbox: true
 
 OpenAll.lua
