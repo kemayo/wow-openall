@@ -4,7 +4,7 @@ local _G = getfenv(0)
 local baseInboxFrame_OnClick
 function doNothing() end
 function openAll()
-	button:SetScript("OnClick", donothing)
+	button:SetScript("OnClick", nil)
 	if GetInboxNumItems() == 0 then return end
 	baseInboxFrame_OnClick = InboxFrame_OnClick
 	InboxFrame_OnClick = doNothing
@@ -13,6 +13,7 @@ function openAll()
 	openMail(GetInboxNumItems())
 end
 function stopOpening()
+	button:SetScript("OnUpdate", nil)
 	button:SetScript("OnClick", openAll)
 	if baseInboxFrame_OnClick then
 		InboxFrame_OnClick = baseInboxFrame_OnClick
@@ -21,8 +22,7 @@ function stopOpening()
 	button:UnregisterEvent("UI_ERROR_MESSAGE")
 end
 function openMail(index)
-	if not InboxFrame:IsVisible() then return stopOpening() end
-	if index == 0 then return stopOpening() end
+	if not InboxFrame:IsVisible() or index == 0 then return stopOpening() end
 	local _, _, _, _, money, COD, _, hasItem = GetInboxHeaderInfo(index)
 	if money > 0 then TakeInboxMoney(index)
 	elseif hasItem and COD <= 0 then TakeInboxItem(index) end
@@ -48,7 +48,7 @@ function waitForMail()
 	end
 end
 function onEvent(frame, event, arg1, arg2, arg3, arg4)
-	if event == UI_ERROR_MESSAGE then
+	if event == "UI_ERROR_MESSAGE" then
 		if arg1 == ERR_INV_FULL then
 			stopOpening()
 		end
