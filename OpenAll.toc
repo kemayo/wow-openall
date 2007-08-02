@@ -1,6 +1,6 @@
 ## Interface: 20100
 
-## Title: Open All
+## Title: OpenAll
 ## Notes: Open all your mail
 ## Author: Kemayo
 ## Version: 1
