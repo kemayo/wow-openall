@@ -4,10 +4,11 @@ local button, button2, waitForMail, doNothing, openAll, openAllCash, openMail, l
 local _G = getfenv(0)
 local baseInboxFrame_OnClick
 function doNothing() end
+
 function openAll()
+	if GetInboxNumItems() == 0 then return end
 	button:SetScript("OnClick", nil)
 	button2:SetScript("OnClick", nil)
-	if GetInboxNumItems() == 0 then return end
 	baseInboxFrame_OnClick = InboxFrame_OnClick
 	InboxFrame_OnClick = doNothing
 	for i = 1, 7 do _G["MailItem" .. i .. "ButtonIcon"]:SetDesaturated(1) end
@@ -17,17 +18,6 @@ end
 function openAllCash()
 	takingOnlyCash = true
 	openAll()
-end
-function stopOpening()
-	button:SetScript("OnUpdate", nil)
-	button:SetScript("OnClick", openAll)
-	button2:SetScript("OnClick", openAllCash)
-	if baseInboxFrame_OnClick then
-		InboxFrame_OnClick = baseInboxFrame_OnClick
-	end
-	for i = 1, 7 do _G["MailItem" .. i .. "ButtonIcon"]:SetDesaturated(nil) end
-	button:UnregisterEvent("UI_ERROR_MESSAGE")
-	takingOnlyCash = false
 end
 function openMail(index)
 	if not InboxFrame:IsVisible() or index == 0 then return stopOpening() end
@@ -47,14 +37,26 @@ function waitForMail()
 	t = t + arg1
 	if t > deletedelay then
 		button:SetScript("OnUpdate", nil)
-		local _, _, _, _, money, _, _, hasItem = GetInboxHeaderInfo(lastopened)
-		if money > 0 or ((not takingOnlyCash) and hasItem) then --deleted or bumped
+		local _, _, _, _, money, COD, _, hasItem = GetInboxHeaderInfo(lastopened)
+		if money > 0 or ((not takingOnlyCash) and COD <= 0 and hasItem) then --deleted or bumped
 			openMail(lastopened)
 		else
 			openMail(lastopened - 1)
 		end
 	end
 end
+function stopOpening()
+	button:SetScript("OnUpdate", nil)
+	button:SetScript("OnClick", openAll)
+	button2:SetScript("OnClick", openAllCash)
+	if baseInboxFrame_OnClick then
+		InboxFrame_OnClick = baseInboxFrame_OnClick
+	end
+	for i = 1, 7 do _G["MailItem" .. i .. "ButtonIcon"]:SetDesaturated(nil) end
+	button:UnregisterEvent("UI_ERROR_MESSAGE")
+	takingOnlyCash = false
+end
+
 function onEvent(frame, event, arg1, arg2, arg3, arg4)
 	if event == "UI_ERROR_MESSAGE" then
 		if arg1 == ERR_INV_FULL then
