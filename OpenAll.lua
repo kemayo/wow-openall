@@ -11,7 +11,6 @@ function openAll()
 	button2:SetScript("OnClick", nil)
 	baseInboxFrame_OnClick = InboxFrame_OnClick
 	InboxFrame_OnClick = doNothing
-	for i = 1, 7 do _G["MailItem" .. i .. "ButtonIcon"]:SetDesaturated(1) end
 	button:RegisterEvent("UI_ERROR_MESSAGE")
 	openMail(GetInboxNumItems())
 end
@@ -52,11 +51,9 @@ function stopOpening()
 	if baseInboxFrame_OnClick then
 		InboxFrame_OnClick = baseInboxFrame_OnClick
 	end
-	for i = 1, 7 do _G["MailItem" .. i .. "ButtonIcon"]:SetDesaturated(nil) end
 	button:UnregisterEvent("UI_ERROR_MESSAGE")
 	takingOnlyCash = false
 end
-
 function onEvent(frame, event, arg1, arg2, arg3, arg4)
 	if event == "UI_ERROR_MESSAGE" then
 		if arg1 == ERR_INV_FULL then
