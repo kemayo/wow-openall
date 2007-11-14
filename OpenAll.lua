@@ -1,7 +1,7 @@
 local deletedelay, t = 0.5, 0
 local takingOnlyCash = false
 local button, button2, waitForMail, doNothing, openAll, openAllCash, openMail, lastopened, stopOpening, onEvent
-local _G = getfenv(0)
+local _G = _G
 local baseInboxFrame_OnClick
 function doNothing() end
 
@@ -20,11 +20,13 @@ function openAllCash()
 end
 function openMail(index)
 	if not InboxFrame:IsVisible() or index == 0 then return stopOpening() end
-	local _, _, _, _, money, COD, _, hasItem = GetInboxHeaderInfo(index)
+	local _, _, _, _, money, COD, _, numItems = GetInboxHeaderInfo(index)
 	if money > 0 then TakeInboxMoney(index)
-	elseif (not takingOnlyCash) and hasItem and COD <= 0 then TakeInboxItem(index) end
+	elseif (not takingOnlyCash) and numItems and (numItems > 0) and COD <= 0 then
+		TakeInboxItem(index)
+	end
 	local items = GetInboxNumItems()
-	if items > 1 and index < items + 1 then
+	if (numItems and numItems > 1) or (items > 1 and index <= items) then
 		lastopened = index
 		t = 0
 		button:SetScript("OnUpdate", waitForMail)
@@ -36,8 +38,9 @@ function waitForMail()
 	t = t + arg1
 	if t > deletedelay then
 		button:SetScript("OnUpdate", nil)
-		local _, _, _, _, money, COD, _, hasItem = GetInboxHeaderInfo(lastopened)
-		if money > 0 or ((not takingOnlyCash) and COD <= 0 and hasItem) then --deleted or bumped
+		local _, _, _, _, money, COD, _, numItems = GetInboxHeaderInfo(lastopened)
+		if money > 0 or ((not takingOnlyCash) and COD <= 0 and numItems and (numItems > 0)) then
+			--The lastopened index inbox item still contains stuff we want
 			openMail(lastopened)
 		else
 			openMail(lastopened - 1)
