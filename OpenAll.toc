@@ -5,7 +5,7 @@
 ## Author: Kemayo
 ## Version: 1
 ## X-Category: Mail
-## LoadManagers: SupplyAndDemand, ForkliftGnome
+## LoadManagers: SupplyAndDemand, AddonLoader
 ## X-S&D-AtMail: true
 ## X-LoadOn-Mailbox: true
 
