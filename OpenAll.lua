@@ -1,6 +1,6 @@
 local deletedelay, t = 0.5, 0
 local takingOnlyCash = false
-local button, button2, waitForMail, doNothing, openAll, openAllCash, openMail, lastopened, stopOpening, onEvent, copper_to_pretty_money, total_cash
+local button, button2, waitForMail, doNothing, openAll, openAllCash, openMail, lastopened, stopOpening, onEvent, needsToWait, copper_to_pretty_money, total_cash
 local _G = _G
 local baseInboxFrame_OnClick
 function doNothing() end
@@ -19,13 +19,16 @@ function openAllCash()
 	openAll()
 end
 function openMail(index)
-	if not InboxFrame:IsVisible() or index == 0 then return stopOpening() end
+	if not InboxFrame:IsVisible() then return stopOpening("Need a mailbox.") end
+	if index == 0 then return stopOpening("Reached the end.") end
 	local _, _, _, _, money, COD, _, numItems = GetInboxHeaderInfo(index)
 	if money > 0 then
 		TakeInboxMoney(index)
+		needsToWait = true
 		total_cash = total_cash - money
 	elseif (not takingOnlyCash) and numItems and (numItems > 0) and COD <= 0 then
 		TakeInboxItem(index)
+		needsToWait = true
 	end
 	local items = GetInboxNumItems()
 	if (numItems and numItems > 1) or (items > 1 and index <= items) then
@@ -33,12 +36,13 @@ function openMail(index)
 		t = 0
 		button:SetScript("OnUpdate", waitForMail)
 	else
-		stopOpening()
+		stopOpening("All done.")
 	end
 end
 function waitForMail()
 	t = t + arg1
-	if t > deletedelay then
+	if (not needsToWait) or (t > deletedelay) then
+		needsToWait = false
 		button:SetScript("OnUpdate", nil)
 		local _, _, _, _, money, COD, _, numItems = GetInboxHeaderInfo(lastopened)
 		if money > 0 or ((not takingOnlyCash) and COD <= 0 and numItems and (numItems > 0)) then
@@ -49,7 +53,7 @@ function waitForMail()
 		end
 	end
 end
-function stopOpening()
+function stopOpening(msg, ...)
 	button:SetScript("OnUpdate", nil)
 	button:SetScript("OnClick", openAll)
 	button2:SetScript("OnClick", openAllCash)
@@ -59,11 +63,12 @@ function stopOpening()
 	button:UnregisterEvent("UI_ERROR_MESSAGE")
 	takingOnlyCash = false
 	total_cash = nil
+	if msg then DEFAULT_CHAT_FRAME:AddMessage("OpenAll: "..msg, ...) end
 end
 function onEvent(frame, event, arg1, arg2, arg3, arg4)
 	if event == "UI_ERROR_MESSAGE" then
 		if arg1 == ERR_INV_FULL then
-			stopOpening()
+			stopOpening("Stopped, inventory is full.")
 		end
 	end
 end
