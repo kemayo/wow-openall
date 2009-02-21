@@ -1,6 +1,6 @@
 local deletedelay, t = 0.5, 0
 local takingOnlyCash = false
-local button, button2, waitForMail, doNothing, openAll, openAllCash, openMail, lastopened, stopOpening, onEvent
+local button, button2, waitForMail, doNothing, openAll, openAllCash, openMail, lastopened, stopOpening, onEvent, copper_to_pretty_money, total_cash
 local _G = _G
 local baseInboxFrame_OnClick
 function doNothing() end
@@ -21,7 +21,9 @@ end
 function openMail(index)
 	if not InboxFrame:IsVisible() or index == 0 then return stopOpening() end
 	local _, _, _, _, money, COD, _, numItems = GetInboxHeaderInfo(index)
-	if money > 0 then TakeInboxMoney(index)
+	if money > 0 then
+		TakeInboxMoney(index)
+		total_cash = total_cash - money
 	elseif (not takingOnlyCash) and numItems and (numItems > 0) and COD <= 0 then
 		TakeInboxItem(index)
 	end
@@ -56,6 +58,7 @@ function stopOpening()
 	end
 	button:UnregisterEvent("UI_ERROR_MESSAGE")
 	takingOnlyCash = false
+	total_cash = nil
 end
 function onEvent(frame, event, arg1, arg2, arg3, arg4)
 	if event == "UI_ERROR_MESSAGE" then
@@ -77,3 +80,28 @@ button:SetScript("OnClick", openAll)
 button:SetScript("OnEvent", onEvent)
 button2 = makeButton("OpenAllButton2", "Take Cash", 60, 25, 20, -410)
 button2:SetScript("OnClick", openAllCash)
+
+function copper_to_pretty_money(c)
+	if c > 10000 then
+		return ("%d|cffffd700g|r%d|cffc7c7cfs|r%d|cffeda55fc|r"):format(c/10000, (c/100)%100, c%100)
+	elseif c > 100 then
+		return ("%d|cffc7c7cfs|r%d|cffeda55fc|r"):format((c/100)%100, c%100)
+	else
+		return ("%d|cffeda55fc|r"):format(c%100)
+	end
+end
+button2:SetScript("OnEnter", function()
+	if not total_cash then
+		total_cash = 0
+		for index=0, GetInboxNumItems() do
+			total_cash = total_cash + select(5, GetInboxHeaderInfo(index))
+		end
+	end
+	GameTooltip:SetOwner(button, "ANCHOR_RIGHT")
+	GameTooltip:AddLine(copper_to_pretty_money(total_cash), 1, 1, 1)
+	GameTooltip:Show()
+end)
+button2:SetScript("OnLeave", function()
+	GameTooltip:Hide()
+end)
+
