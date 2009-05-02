@@ -86,6 +86,13 @@ button:SetScript("OnEvent", onEvent)
 button2 = makeButton("OpenAllButton2", "Take Cash", 60, 25, 20, -410)
 button2:SetScript("OnClick", openAllCash)
 
+button:SetScript("OnEnter", function()
+	GameTooltip:SetOwner(button, "ANCHOR_RIGHT")
+	GameTooltip:AddLine(string.format("%d messages", GetInboxNumItems()), 1, 1, 1)
+	GameTooltip:Show()
+end)
+button:SetScript("OnLeave", function() GameTooltip:Hide() end)
+
 function copper_to_pretty_money(c)
 	if c > 10000 then
 		return ("%d|cffffd700g|r%d|cffc7c7cfs|r%d|cffeda55fc|r"):format(c/10000, (c/100)%100, c%100)
@@ -106,7 +113,5 @@ button2:SetScript("OnEnter", function()
 	GameTooltip:AddLine(copper_to_pretty_money(total_cash), 1, 1, 1)
 	GameTooltip:Show()
 end)
-button2:SetScript("OnLeave", function()
-	GameTooltip:Hide()
-end)
+button2:SetScript("OnLeave", function() GameTooltip:Hide() end)
 
