@@ -39,7 +39,7 @@ function openMail(index)
 		stopOpening("All done.")
 	end
 end
-function waitForMail()
+function waitForMail(this, arg1)
 	t = t + arg1
 	if (not needsToWait) or (t > deletedelay) then
 		needsToWait = false
