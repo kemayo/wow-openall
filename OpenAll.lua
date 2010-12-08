@@ -33,7 +33,7 @@ function openMail(index)
 		if total_cash then total_cash = total_cash - money end
 	end
 	local items = GetInboxNumItems()
-	if items > 1 and index <= items then
+	if (numItems and numItems > 0) or (items > 1 and index <= items) then
 		lastopened = index
 		button:SetScript("OnUpdate", waitForMail)
 	else
@@ -47,7 +47,14 @@ function waitForMail(this, arg1)
 		t = 0
 		needsToWait = false
 		button:SetScript("OnUpdate", nil)
-		openMail(lastopened - 1)
+		
+		local _, _, _, _, money, COD, _, numItems = GetInboxHeaderInfo(lastopened)
+		if money > 0 or ((not takingOnlyCash) and COD <= 0 and numItems and (numItems > 0)) then
+			--The lastopened index inbox item still contains stuff we want
+			openMail(lastopened)
+		else
+			openMail(lastopened - 1)
+		end
 	end
 end
 function stopOpening(msg, ...)
