@@ -1,4 +1,4 @@
-## Interface: 40200
+## Interface: 50001
 
 ## Title: OpenAll
 ## Notes: Open all your mail
