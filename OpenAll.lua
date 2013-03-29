@@ -20,7 +20,7 @@ function openAllCash()
 end
 function openMail(index)
 	if not InboxFrame:IsVisible() then return stopOpening("Need a mailbox.") end
-	if index == 0 then return stopOpening("Reached the end.") end
+	if index == 0 then return stopOpening("Reached the end.", true) end
 	local _, _, _, _, money, COD, _, numItems = GetInboxHeaderInfo(index)
 	if not takingOnlyCash then
 		if money > 0 or (numItems and numItems > 0) and COD <= 0 then
@@ -37,7 +37,7 @@ function openMail(index)
 		lastopened = index
 		button:SetScript("OnUpdate", waitForMail)
 	else
-		stopOpening("All done.")
+		stopOpening("All done.", true)
 	end
 end
 function waitForMail(this, arg1)
@@ -57,7 +57,7 @@ function waitForMail(this, arg1)
 		end
 	end
 end
-function stopOpening(msg, ...)
+function stopOpening(msg, hide_minimap_button, ...)
 	button:SetScript("OnUpdate", nil)
 	button:SetScript("OnClick", openAll)
 	button2:SetScript("OnClick", openAllCash)
@@ -68,6 +68,7 @@ function stopOpening(msg, ...)
 	takingOnlyCash = false
 	total_cash = nil
 	needsToWait = false
+	if hide_minimap_button then MiniMapMailFrame:Hide() end
 	if msg then DEFAULT_CHAT_FRAME:AddMessage("OpenAll: "..msg, ...) end
 end
 function onEvent(frame, event, arg1, arg2, arg3, arg4)
