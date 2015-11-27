@@ -1,7 +1,6 @@
 local deletedelay, t = 0.5, 0
 local takingOnlyCash = false
-local button, button2, waitForMail, doNothing, openAll, openAllCash, openMail, lastopened, stopOpening, onEvent, needsToWait, copper_to_pretty_money, total_cash
-local _G = _G
+local button, button2, waitForMail, doNothing, openAll, openAllCash, openMail, lastopened, stopOpening, mail_checker, needsToWait, copper_to_pretty_money, total_cash
 local baseInboxFrame_OnClick
 function doNothing() end
 
@@ -19,8 +18,8 @@ function openAllCash()
 	openAll()
 end
 function openMail(index)
-	if not InboxFrame:IsVisible() then return stopOpening("Need a mailbox.") end
-	if index == 0 then return stopOpening("Reached the end.", true) end
+	if not InboxFrame:IsVisible() then return end
+	if index == 0 then return stopOpening("Reached the end.") end
 	local _, _, _, _, money, COD, _, numItems = GetInboxHeaderInfo(index)
 	if not takingOnlyCash then
 		if money > 0 or (numItems and numItems > 0) and COD <= 0 then
@@ -37,13 +36,13 @@ function openMail(index)
 		lastopened = index
 		button:SetScript("OnUpdate", waitForMail)
 	else
-		stopOpening("All done.", true)
+		stopOpening("All done.")
 	end
 end
 function waitForMail(this, arg1)
 	t = t + arg1
 	if (not needsToWait) or (t > deletedelay) then
-		if not InboxFrame:IsVisible() then return stopOpening("Need a mailbox.") end
+		if not InboxFrame:IsVisible() then return end
 		t = 0
 		needsToWait = false
 		button:SetScript("OnUpdate", nil)
@@ -57,7 +56,7 @@ function waitForMail(this, arg1)
 		end
 	end
 end
-function stopOpening(msg, hide_minimap_button, ...)
+function stopOpening(msg, ...)
 	button:SetScript("OnUpdate", nil)
 	button:SetScript("OnClick", openAll)
 	button2:SetScript("OnClick", openAllCash)
@@ -68,15 +67,9 @@ function stopOpening(msg, hide_minimap_button, ...)
 	takingOnlyCash = false
 	total_cash = nil
 	needsToWait = false
-	if hide_minimap_button then MiniMapMailFrame:Hide() end
 	if msg then DEFAULT_CHAT_FRAME:AddMessage("OpenAll: "..msg, ...) end
-end
-function onEvent(frame, event, arg1, arg2, arg3, arg4)
-	if event == "UI_ERROR_MESSAGE" then
-		if arg1 == ERR_INV_FULL then
-			stopOpening("Stopped, inventory is full.")
-		end
-	end
+
+	mail_checker:Show()
 end
 local function makeButton(id, text, w, h, x, y)
 	local button = CreateFrame("Button", id, InboxFrame, "UIPanelButtonTemplate")
@@ -88,7 +81,16 @@ local function makeButton(id, text, w, h, x, y)
 end
 button = makeButton("OpenAllButton", "Take All", 60, 25, -50, -410)
 button:SetScript("OnClick", openAll)
-button:SetScript("OnEvent", onEvent)
+button:SetScript("OnEvent", function(this, event, error_msg)
+	if event == "UI_ERROR_MESSAGE" and error_msg == ERR_INV_FULL then
+		stopOpening("Stopped, inventory is full.")
+	end
+end)
+button:SetScript("OnHide", function(this)
+	if needsToWait then
+		stopOpening("Need a mailbox.")
+	end
+end)
 button2 = makeButton("OpenAllButton2", "Take Cash", 60, 25, 20, -410)
 button2:SetScript("OnClick", openAllCash)
 
@@ -121,3 +123,22 @@ button2:SetScript("OnEnter", function()
 end)
 button2:SetScript("OnLeave", function() GameTooltip:Hide() end)
 
+mail_checker = CreateFrame("Frame")
+mail_checker:Hide()
+mail_checker:SetScript("OnShow", function(this)
+	this:RegisterEvent("MAIL_INBOX_UPDATE")
+	CheckInbox()
+end)
+mail_checker:SetScript("OnHide", function(this)
+	if select(2, GetInboxNumItems()) > 0 then
+		MiniMapMailFrame:Show()
+	else
+		MiniMapMailFrame:Hide()
+	end
+end)
+mail_checker:SetScript("OnEvent", function(this, event, ...)
+	if event == "MAIL_INBOX_UPDATE" then
+		this:Hide()
+		this:UnregisterEvent("MAIL_INBOX_UPDATE")
+	end
+end)
