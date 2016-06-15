@@ -82,8 +82,13 @@ end
 button = makeButton("OpenAllButton", "Take All", 60, 25, -50, -410)
 button:SetScript("OnClick", openAll)
 button:SetScript("OnEvent", function(this, event, error_msg)
-	if event == "UI_ERROR_MESSAGE" and error_msg == ERR_INV_FULL then
-		stopOpening("Stopped, inventory is full.")
+	if event == "UI_ERROR_MESSAGE" then
+		if error_msg == ERR_INV_FULL then
+			return stopOpening("Stopped, inventory is full.")
+		end
+		if error_msg == ERR_ITEM_MAX_COUNT then
+			openMail(lastopened - 1)
+		end
 	end
 end)
 button:SetScript("OnHide", function(this)
