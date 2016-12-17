@@ -81,7 +81,7 @@ local function makeButton(id, text, w, h, x, y)
 end
 button = makeButton("OpenAllButton", "Take All", 60, 25, -50, -410)
 button:SetScript("OnClick", openAll)
-button:SetScript("OnEvent", function(this, event, error_msg)
+button:SetScript("OnEvent", function(this, event, msg_type, error_msg)
 	if event == "UI_ERROR_MESSAGE" then
 		if error_msg == ERR_INV_FULL then
 			return stopOpening("Stopped, inventory is full.")
