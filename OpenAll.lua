@@ -1,113 +1,132 @@
-local deletedelay, t = 0.5, 0
-local takingOnlyCash = false
-local button, button2, waitForMail, doNothing, openAll, openAllCash, openMail, lastopened, stopOpening, mail_checker, needsToWait, copper_to_pretty_money, total_cash, get_total_cash
-local baseInboxFrame_OnClick
-function doNothing() end
+local myname, ns = ...
+local myfullname = GetAddOnMetadata(myname, "Title")
 
-function openAll()
-	if GetInboxNumItems() == 0 then return end
-	button:SetScript("OnClick", nil)
-	button2:SetScript("OnClick", nil)
+local DELETE_DELAY = 0.15
+local mail_checker, copper_to_pretty_money
+local baseInboxFrame_OnClick
+local doNothing = function() end
+
+local button = CreateFrame("Button", "OpenAllCashButton", InboxFrame, "UIPanelButtonTemplate")
+button:SetText(MONEY)
+button:SetSize(60, 25)
+button:SetPoint("LEFT", OpenAllMail, "RIGHT", 5, 0)
+
+button:SetScript("OnEvent", function(self, event, ...)
+	self[event](self, event, ...)
+end)
+
+function button:UI_ERROR_MESSAGE(event, msg_type, error_msg)
+	if error_msg == ERR_INV_FULL then
+		return self:StopOpening("Stopped, inventory is full.")
+	end
+	if error_msg == ERR_ITEM_MAX_COUNT then
+		self:ProcessMail(lastopened - 1)
+	end
+end
+
+button:SetScript("OnClick", function(self)
+	if GetInboxNumItems() == 0 then
+		return
+	end
+	self:Disable()
+	self:RegisterEvent("UI_ERROR_MESSAGE")
+
+	OpenAllMail:Disable()
 	baseInboxFrame_OnClick = InboxFrame_OnClick
 	InboxFrame_OnClick = doNothing
-	button:RegisterEvent("UI_ERROR_MESSAGE")
-	openMail(GetInboxNumItems())
-end
-function openAllCash()
-	takingOnlyCash = true
-	openAll()
-end
-function openMail(index)
-	if not InboxFrame:IsVisible() then return end
-	if index == 0 then return stopOpening("Reached the end.") end
-	local _, _, _, _, money, COD, _, numItems = GetInboxHeaderInfo(index)
-	if not takingOnlyCash then
-		if money > 0 or (numItems and numItems > 0) and COD <= 0 then
-			AutoLootMailItem(index)
-			needsToWait = true
-		end
-	elseif money > 0 then
+
+	self.currentIndex = GetInboxNumItems()
+	self:ProcessMail(GetInboxNumItems())
+end)
+
+button:SetScript("OnEnter", function(self)
+	GameTooltip:SetOwner(button, "ANCHOR_RIGHT")
+	-- GameTooltip:AddLine(string.format("%d messages", GetInboxNumItems()), 1, 1, 1)
+	GameTooltip:AddLine(copper_to_pretty_money(self:TotalCash()), 1, 1, 1)
+	GameTooltip:Show()
+end)
+
+button:SetScript("OnLeave", function() GameTooltip:Hide() end)
+
+button:SetScript("OnHide", function(self)
+	if self.currentIndex then
+		self:StopOpening("Need a mailbox.")
+	end
+end)
+
+
+function button:ProcessMail(index)
+	if not InboxFrame:IsVisible() then
+		return
+	end
+	if index == 0 then
+		return self:StopOpening("All done.")
+	end
+	self.currentIndex = index
+	local _, _, _, _, money, COD, _, numItems, _, _, _, _, fromGM = GetInboxHeaderInfo(index)
+	-- If there's money and it's not from a GM, take it
+	if money > 0 and not (fromGM or (COD and COD > 0)) then
 		TakeInboxMoney(index)
-		needsToWait = true
-		if total_cash then total_cash = total_cash - money end
-	end
-	local items = GetInboxNumItems()
-	if (numItems and numItems > 0) or (items > 1 and index <= items) then
-		lastopened = index
-		button:SetScript("OnUpdate", waitForMail)
-	else
-		stopOpening("All done.")
-	end
-end
-function waitForMail(this, arg1)
-	t = t + arg1
-	if (not needsToWait) or (t > deletedelay) then
-		if not InboxFrame:IsVisible() then return end
-		t = 0
-		needsToWait = false
-		button:SetScript("OnUpdate", nil)
-		
-		local _, _, _, _, money, COD, _, numItems = GetInboxHeaderInfo(lastopened)
-		if money > 0 or ((not takingOnlyCash) and COD <= 0 and numItems and (numItems > 0)) then
-			--The lastopened index inbox item still contains stuff we want
-			openMail(lastopened)
-		else
-			openMail(lastopened - 1)
+		if self.total_cash then
+			self.total_cash = self.total_cash - money
 		end
+		self:SetScript("OnUpdate", self.WaitForMail)
+	else
+		return self:ProcessMail(index - 1)
 	end
 end
-function stopOpening(msg, ...)
-	button:SetScript("OnUpdate", nil)
-	button:SetScript("OnClick", openAll)
-	button2:SetScript("OnClick", openAllCash)
+
+function button:StopOpening(msg, ...)
+	self:SetScript("OnUpdate", nil)
+	self:Enable(false)
+
+	OpenAllMail:Enable()
 	if baseInboxFrame_OnClick then
 		InboxFrame_OnClick = baseInboxFrame_OnClick
 	end
-	button:UnregisterEvent("UI_ERROR_MESSAGE")
-	takingOnlyCash = false
-	total_cash = nil
-	needsToWait = false
-	if msg then DEFAULT_CHAT_FRAME:AddMessage("OpenAll: "..msg, ...) end
+	self:UnregisterEvent("UI_ERROR_MESSAGE")
+	self.total_cash = nil
+	self.currentIndex = nil
+	if msg then
+		DEFAULT_CHAT_FRAME:AddMessage(myfullname .. ": " .. msg, ...)
+	end
 
 	mail_checker:Show()
 end
-local function makeButton(id, text, w, h, x, y)
-	local button = CreateFrame("Button", id, InboxFrame, "UIPanelButtonTemplate")
-	button:SetWidth(w)
-	button:SetHeight(h)
-	button:SetPoint("CENTER", InboxFrame, "TOP", x, y)
-	button:SetText(text)
-	return button
-end
-button = makeButton("OpenAllButton", "Take All", 60, 25, -50, -410)
-button:SetScript("OnClick", openAll)
-button:SetScript("OnEvent", function(this, event, msg_type, error_msg)
-	if event == "UI_ERROR_MESSAGE" then
-		if error_msg == ERR_INV_FULL then
-			return stopOpening("Stopped, inventory is full.")
-		end
-		if error_msg == ERR_ITEM_MAX_COUNT then
-			openMail(lastopened - 1)
-		end
-	end
-end)
-button:SetScript("OnHide", function(this)
-	if needsToWait then
-		stopOpening("Need a mailbox.")
-	end
-end)
-button2 = makeButton("OpenAllButton2", "Take Cash", 60, 25, 20, -410)
-button2:SetScript("OnClick", openAllCash)
 
-function get_total_cash()
-	local index
-	if not total_cash then
-		total_cash = 0
-		for index=0, GetInboxNumItems() do
-			total_cash = total_cash + select(5, GetInboxHeaderInfo(index))
+button.elapsed = 0
+function button:WaitForMail(sinceLast)
+	self.elapsed = self.elapsed + sinceLast
+	if self.elapsed > DELETE_DELAY then
+		if not InboxFrame:IsVisible() then
+			return self:StopOpening()
+		end
+		self.elapsed = 0
+		if C_Mail.IsCommandPending() then
+			-- Wait for more
+			return
+		end
+		self:SetScript("OnUpdate", nil)
+
+		local _, _, _, _, money = GetInboxHeaderInfo(self.currentIndex)
+		if money > 0 then
+			--The lastopened index inbox item still contains stuff we want
+			self:ProcessMail(self.currentIndex)
+		else
+			self:ProcessMail(self.currentIndex - 1)
 		end
 	end
-	return total_cash
+end
+
+function button:TotalCash()
+	local index
+	if not self.total_cash then
+		self.total_cash = 0
+		for index=0, GetInboxNumItems() do
+			self.total_cash = self.total_cash + select(5, GetInboxHeaderInfo(index))
+		end
+	end
+	return self.total_cash
 end
 
 function copper_to_pretty_money(c)
@@ -119,21 +138,6 @@ function copper_to_pretty_money(c)
 		return ("%d|cffeda55fc|r"):format(c%100)
 	end
 end
-
-button:SetScript("OnEnter", function()
-	GameTooltip:SetOwner(button, "ANCHOR_RIGHT")
-	GameTooltip:AddLine(string.format("%d messages", GetInboxNumItems()), 1, 1, 1)
-	GameTooltip:AddLine(copper_to_pretty_money(get_total_cash()), 1, 1, 1)
-	GameTooltip:Show()
-end)
-button:SetScript("OnLeave", function() GameTooltip:Hide() end)
-
-button2:SetScript("OnEnter", function()
-	GameTooltip:SetOwner(button2, "ANCHOR_RIGHT")
-	GameTooltip:AddLine(copper_to_pretty_money(get_total_cash()), 1, 1, 1)
-	GameTooltip:Show()
-end)
-button2:SetScript("OnLeave", function() GameTooltip:Hide() end)
 
 mail_checker = CreateFrame("Frame")
 mail_checker:Hide()

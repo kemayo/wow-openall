@@ -1,7 +1,7 @@
-## Interface: 70100
+## Interface: 70200
 
 ## Title: OpenAll
-## Notes: Open all your mail
+## Notes: Get the cash from your mail
 ## Author: Kemayo
 ## Version: 1
 ## X-Category: Mail
