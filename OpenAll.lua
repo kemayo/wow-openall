@@ -6,6 +6,11 @@ local mail_checker, copper_to_pretty_money
 local baseInboxFrame_OnClick
 local doNothing = function() end
 
+-- Need to move OpenAllMail a little
+-- <Anchor point="CENTER" relativePoint="BOTTOM" x="-21" y="114"/>
+OpenAllMail:SetPoint("CENTER", InboxFrame, "BOTTOM", -54, 114)
+OpenAllMail:SetWidth(80)
+
 local button = CreateFrame("Button", "OpenAllCashButton", InboxFrame, "UIPanelButtonTemplate")
 button:SetText(MONEY)
 button:SetSize(60, 25)
