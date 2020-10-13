@@ -1,4 +1,4 @@
-## Interface: 70200
+## Interface: 90001
 
 ## Title: OpenAll
 ## Notes: Get the cash from your mail
