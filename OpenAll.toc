@@ -1,5 +1,6 @@
 ## Interface: 100002
-
+## Interface-Wrath: 30400
+## Interface-Classic: 11403
 ## Title: OpenAll
 ## Notes: Get the cash from your mail
 ## Author: Kemayo
