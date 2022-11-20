@@ -5,6 +5,7 @@
 ## Author: Kemayo
 ## Version: @project-version@
 ## X-Category: Mail
+## X-Curse-Project-ID: 14464
 ## LoadManagers: SupplyAndDemand, AddonLoader
 ## X-S&D-AtMail: true
 ## X-LoadOn-Mailbox: true
