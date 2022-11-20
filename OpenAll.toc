@@ -1,9 +1,9 @@
-## Interface: 90001
+## Interface: 100002
 
 ## Title: OpenAll
 ## Notes: Get the cash from your mail
 ## Author: Kemayo
-## Version: 1
+## Version: @project-version@
 ## X-Category: Mail
 ## LoadManagers: SupplyAndDemand, AddonLoader
 ## X-S&D-AtMail: true
