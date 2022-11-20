@@ -144,22 +144,24 @@ function copper_to_pretty_money(c)
 	end
 end
 
-mail_checker = CreateFrame("Frame")
-mail_checker:Hide()
-mail_checker:SetScript("OnShow", function(this)
-	this:RegisterEvent("MAIL_INBOX_UPDATE")
-	CheckInbox()
-end)
-mail_checker:SetScript("OnHide", function(this)
-	if select(2, GetInboxNumItems()) > 0 then
-		MiniMapMailFrame:Show()
-	else
-		MiniMapMailFrame:Hide()
-	end
-end)
-mail_checker:SetScript("OnEvent", function(this, event, ...)
-	if event == "MAIL_INBOX_UPDATE" then
-		this:Hide()
-		this:UnregisterEvent("MAIL_INBOX_UPDATE")
-	end
-end)
+if _G.MiniMapMailFrame then
+	mail_checker = CreateFrame("Frame")
+	mail_checker:Hide()
+	mail_checker:SetScript("OnShow", function(this)
+		this:RegisterEvent("MAIL_INBOX_UPDATE")
+		CheckInbox()
+	end)
+	mail_checker:SetScript("OnHide", function(this)
+		if select(2, GetInboxNumItems()) > 0 then
+			MiniMapMailFrame:Show()
+		else
+			MiniMapMailFrame:Hide()
+		end
+	end)
+	mail_checker:SetScript("OnEvent", function(this, event, ...)
+		if event == "MAIL_INBOX_UPDATE" then
+			this:Hide()
+			this:UnregisterEvent("MAIL_INBOX_UPDATE")
+		end
+	end)
+end
