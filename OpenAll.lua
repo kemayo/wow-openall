@@ -96,7 +96,9 @@ function button:StopOpening(msg, ...)
 		DEFAULT_CHAT_FRAME:AddMessage(myfullname .. ": " .. msg, ...)
 	end
 
-	mail_checker:Show()
+	if mail_checker then
+		mail_checker:Show()
+	end
 end
 
 button.elapsed = 0
