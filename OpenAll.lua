@@ -1,5 +1,5 @@
 local myname, ns = ...
-local myfullname = GetAddOnMetadata(myname, "Title")
+local myfullname = C_AddOns.GetAddOnMetadata(myname, "Title")
 
 local DELETE_DELAY = 0.15
 local mail_checker, copper_to_pretty_money
