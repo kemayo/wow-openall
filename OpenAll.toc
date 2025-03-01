@@ -1,12 +1,25 @@
-## Interface: 110002, 40400, 11502
+## Interface: 110100, 40402, 11506
 ## Title: OpenAll
 ## Notes: Get the cash from your mail
 ## Author: Kemayo
 ## Version: @project-version@
+## IconAtlas: Mailbox
 ## X-Category: Mail
 ## X-Curse-Project-ID: 14464
 ## LoadManagers: SupplyAndDemand, AddonLoader
 ## X-S&D-AtMail: true
 ## X-LoadOn-Mailbox: true
+
+## Category-enUS: User Interface
+## Category-deDE: Benutzerinterface
+## Category-esES: Interfaz de usuario
+## Category-esMX: Interfaz de usuario
+## Category-frFR: Interface utilisateur
+## Category-itIT: Interfaccia utente
+## Category-koKR: 사용자 인터페이스
+## Category-ptBR: Interface do usuário
+## Category-ruRU: Интерфейс пользователя
+## Category-zhCN: 用户界面
+## Category-zhTW: 使用者介面
 
 OpenAll.lua
