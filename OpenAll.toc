@@ -1,4 +1,4 @@
-## Interface: 120001, 120000, 110207, 50503, 11508
+## Interface: 120001, 120000, 110207, 50503, 30405, 20505, 11508
 ## Title: OpenAll
 ## Notes: Get the cash from your mail
 ## Author: Kemayo
