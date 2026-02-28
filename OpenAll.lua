@@ -130,19 +130,23 @@ function button:TotalCash()
 	if not self.total_cash then
 		self.total_cash = 0
 		for index=0, GetInboxNumItems() do
+			-- print("Adding cash", select(5, GetInboxHeaderInfo(index)), copper_to_pretty_money(select(5, GetInboxHeaderInfo(index))))
 			self.total_cash = self.total_cash + select(5, GetInboxHeaderInfo(index))
 		end
 	end
+	-- print("Got total", self.total_cash, copper_to_pretty_money(self.total_cash))
 	return self.total_cash
 end
 
 function copper_to_pretty_money(c)
-	if c > 10000 then
-		return ("%d|cffffd700g|r%d|cffc7c7cfs|r%d|cffeda55fc|r"):format(c/10000, (c/100)%100, c%100)
-	elseif c > 100 then
-		return ("%d|cffc7c7cfs|r%d|cffeda55fc|r"):format((c/100)%100, c%100)
+	if c >= 10000 then
+		return ("|cffffffff%s|r|cffffd700%s|r |cffffffff%d|r|cffc7c7cf%s|r |cffffffff%d|r|cffeda55f%s|r"):format(
+			BreakUpLargeNumbers(math.floor(c/10000)), GOLD_AMOUNT_SYMBOL, math.floor(c/100)%100, SILVER_AMOUNT_SYMBOL, c%100, COPPER_AMOUNT_SYMBOL
+		)
+	elseif c >= 100 then
+		return ("|cffffffff%d|r|cffc7c7cf%s|r |cffffffff%d|r|cffeda55f%s|r"):format(math.floor(c/100)%100, SILVER_AMOUNT_SYMBOL, c%100, COPPER_AMOUNT_SYMBOL)
 	else
-		return ("%d|cffeda55fc|r"):format(c%100)
+		return ("|cffffffff%d|r|cffeda55f%s|r"):format(c%100, COPPER_AMOUNT_SYMBOL)
 	end
 end
 
